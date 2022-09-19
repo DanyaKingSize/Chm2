@@ -1,17 +1,32 @@
 import numpy as np
 
 
-def inverseMatrix(aMatrix,size):
+def inverseMatrix(origMatrix):
+    size = len(origMatrix[0])
+    A = origMatrix
     E = np.eye(size)
-    A_inv = np.zeros_like(aMatrix)
-    for i in range(size):
-        uzi(aMatrix, E[:, i])
+    print('Ед матрица\n', E)
+    A_inv = []
+    for i in E:
+        A_inv.append(invCalc(A, i))
+    print('\nИнверсированная матрица')
+    print(A_inv)
 
 
 
+def invCalc(originMatrix, E):
+    extended = createExtended(originMatrix, E)
+    print('Расширенная\n', extended)
+    uMatrix, zMatrix = getUZ(extended)
+    print('U матрица:\n', uMatrix)
+    print()
+    print('Z матрица:\n', zMatrix)
+    xlist = getX(zMatrix, len(originMatrix))
+    return xlist
 
 
-def createExtended(original, size, data):
+def createExtended(original, data):
+    size = len(original[0])
     extended = np.zeros((size + 1, size + 1))
     for i in range(size + 1):
         for j in range(size + 1):
@@ -22,7 +37,10 @@ def createExtended(original, size, data):
             extended[i][size] = 1
             # extended[i][size - 1] = 1
         if i < size and j == size:
-            extended[i][size] = data[i] * -1
+            if (data[i] == 0):
+                extended[i][size] = data[i]
+            else:
+                extended[i][size] = data[i] * -1
     return extended
 
 
@@ -30,44 +48,29 @@ def ortoMethod(size, list1, list2):
     M = size
     Matrix = np.array(list1)
     bMatrix = list2
-    extendedMatrix = createExtended(Matrix, M, bMatrix)
-
-    print(aMatrix)
-    print()
-    print(extendedMatrix)
-
-    uzi(M, extendedMatrix, Matrix)
+    extendedMatrix = createExtended(Matrix, bMatrix)
+    uzi(extendedMatrix, Matrix)
 
 
-def uzi(size, aMatrix, Matrix):
-    uMatrix = np.zeros((size + 1, size + 1))
-    zMatrix = np.zeros((size + 1, size + 1))
-    for i in range(size + 1):
+def getUZ(aMatrix):
+    size = len(aMatrix)
+
+    uMatrix = np.zeros((size, size))
+    zMatrix = np.zeros((size, size))
+    for i in range(size):
         uMatrix[i] = aMatrix[i]
         for j in range(i):
             uMatrix[i] = uMatrix[i] - (np.dot(aMatrix[i], zMatrix[j]) * zMatrix[j])
         zMatrix[i] = uMatrix[i] / np.sqrt(np.dot(uMatrix[i], uMatrix[i]))
-    print()
-    print()
-    print('U matrix:\n')
+    return uMatrix, zMatrix
 
-    print(uMatrix, '\n\n')
 
-    print('Z matrix: ')
-    print(zMatrix)
-    x = 0
-    xList = []
-    print('X: = ')
-    VectorNevyaz = Matrix
-    for i in range(size):
-        x = zMatrix[size][i] / zMatrix[size][size]
-        print('x(', i, ' )  = ', x)
-        xList.append(x)
+def uzi(aMatrix, Matrix):
+    size = len(Matrix[0])
+    uMatrix, zMatrix = getUZ(aMatrix)
+
+    xList = getX(zMatrix, size)
     VectorNevyaz = np.dot(Matrix, xList) - bMatrix
-
-    print('Вектора невязки')
-    print(VectorNevyaz)
-    inverseMatrix(Matrix,size)
 
     with open('Out.txt', 'w', encoding='UTF-8') as file:
         file.write('a matrix: \n' + str(Matrix) + '\n\n')
@@ -77,12 +80,23 @@ def uzi(size, aMatrix, Matrix):
         file.write('Z matrix: \n' + str(zMatrix) + '\n\n')
         file.write('x: =  \n')
         for i in range(size):
-            file.write('X[' + str(i) + '] = ' + str(xList[i])+ '\n')
-        file.write('\nВектор невязки: ' + str(VectorNevyaz)+'\n\n')
-        file.write('Норма невязки : ' + str(np.sqrt((VectorNevyaz**2).sum())))
+            file.write('X[' + str(i) + '] = ' + str(xList[i]) + '\n')
+        file.write('\nВектор невязки: ' + str(VectorNevyaz) + '\n\n')
+        file.write('Норма невязки : ' + str(np.sqrt((VectorNevyaz ** 2).sum())))
+        file.write('FSDFSDFSDFSDFSDFSDFSDFSD')
+
+
+def getX(zMatrix, size):
+    x = 0
+    xList = []
+    for i in range(size):
+        x = zMatrix[-1][i] / zMatrix[-1][-1]
+        xList.append(x)
+    return xList
 
 
 if __name__ == '__main__':
+    print('Славка ку')
     aMatrix = []
     bMatrix = []
     with open('in.txt', encoding='UTF-8') as file:
@@ -96,3 +110,4 @@ if __name__ == '__main__':
     M = len(bMatrix)
 
     ortoMethod(M, aMatrix, bMatrix)
+    inverseMatrix(aMatrix)
